@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Work Assignments{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">Work Assignments</h2>
+
+  <button class="btn-prison mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Add Work</button>
+
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Inmate</th>
+        <th>Work Detail</th>
+        <th>Supervisor</th>
+        <th>Assigned Date</th>
+        <th>Status</th>
+        <th>Completion Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in assignments %}
+        <tr>
+          <td>{{ a.inmate_name }}</td>
+          <td>{{ a.assignment }}</td>
+          <td>{{ a.supervisor or 'N/A' }}</td>
+          <td>{{ a.assigned_date }}</td>
+          <td>{{ a.status }}</td>
+          <td>{{ a.completion_date or 'N/A' }}</td>
+          <td>
+            <form action="/update_work_status/{{ a.id }}" method="POST" class="d-inline">
+              <select name="status" class="form-select form-select-sm d-inline w-auto" required>
+                <option value="Assigned" {% if a.status == 'Assigned' %}selected{% endif %}>Assigned</option>
+                <option value="In Progress" {% if a.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Completed" {% if a.status == 'Completed' %}selected{% endif %}>Completed</option>
+              </select>
+              <input type="date" name="completion_date" class="form-control form-control-sm d-inline w-auto"
+                     value="{{ a.completion_date or '' }}" placeholder="Completion Date">
+              <button class="btn btn-sm btn-primary" type="submit">Update</button>
+            </form>
+            <a href="{{ url_for('work_assignments.delete_work_assignment', id=a.id) }}"
+               onclick="return confirm('Delete this assignment?')"
+               class="btn btn-sm btn-danger">Delete</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form action="/add_work_assignment" method="POST" class="modal-content" style="background: var(--prison-medium); color: var(--prison-text);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--prison-rust);">
+        <h5 class="modal-title">Add Work Assignment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <select name="inmate_id" class="form-select mb-2" required>
+          <option value="" disabled selected>Select Inmate</option>
+          {% for inmate in inmates %}
+            <option value="{{ inmate.id }}">{{ inmate.name }}</option>
+          {% endfor %}
+        </select>
+        <input name="work_detail" class="form-control mb-2" placeholder="Work Detail" required>
+        <input name="supervisor" class="form-control mb-2" placeholder="Supervisor (optional)">
+        <input name="assigned_date" type="date" class="form-control mb-2">
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--prison-rust);">
+        <button class="btn-prison" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Punishments{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">Inmate Punishments</h2>
+
+  <button class="btn-prison mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Add Punishment</button>
+
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Inmate</th>
+        <th>Details</th>
+        <th>Date Given</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in punishments %}
+      <tr>
+        <td>{{ p[3] }}</td>
+        <td>{{ p[1] }}</td>
+        <td>{{ p[2] }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning editBtn"
+                  data-id="{{ p[0] }}"
+                  data-inmate="{{ p[4] }}"
+                  data-detail="{{ p[1] }}"
+                  data-date="{{ p[2] }}"
+                  data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
+          <button class="btn btn-sm btn-danger deleteBtn" data-id="{{ p[0] }}">Delete</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="addForm" class="modal-content" style="background: var(--prison-medium); color: var(--prison-text);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--prison-rust);">
+        <h5 class="modal-title">Add Punishment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <select name="inmate_id" class="form-control mb-2" required>
+          <option value="">Select Inmate</option>
+          {% for inmate in inmates %}
+          <option value="{{ inmate[0] }}">{{ inmate[1] }}</option>
+          {% endfor %}
+        </select>
+        <textarea name="punishment_detail" class="form-control mb-2" placeholder="Details" required></textarea>
+        <input type="date" name="date_given" class="form-control" required>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--prison-rust);">
+        <button class="btn-prison" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="editForm" class="modal-content" style="background: var(--prison-medium); color: var(--prison-text);">
+      <input type="hidden" name="id">
+      <div class="modal-header" style="border-bottom: 1px solid var(--prison-rust);">
+        <h5 class="modal-title">Edit Punishment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <select name="inmate_id" class="form-control mb-2" required>
+          {% for inmate in inmates %}
+          <option value="{{ inmate[0] }}">{{ inmate[1] }}</option>
+          {% endfor %}
+        </select>
+        <textarea name="punishment_detail" class="form-control mb-2" required></textarea>
+        <input type="date" name="date_given" class="form-control" required>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--prison-rust);">
+        <button class="btn-prison" type="submit">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ADD
+  document.getElementById('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    fetch('/add_punishment', { method: 'POST', body: new FormData(this) })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message) {
+          alert(data.message);
+          location.reload();
+        } else {
+          alert(data.error || 'Add failed');
+        }
+      });
+  });
+
+  // EDIT - Populate modal
+  document.querySelectorAll('.editBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      const form = document.getElementById('editForm');
+      form.querySelector('[name="id"]').value = button.dataset.id;
+      form.querySelector('[name="inmate_id"]').value = button.dataset.inmate;
+      form.querySelector('[name="punishment_detail"]').value = button.dataset.detail;
+      form.querySelector('[name="date_given"]').value = button.dataset.date;
+    });
+  });
+
+  // EDIT - Submit
+  document.getElementById('editForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const id = this.querySelector('[name="id"]').value;
+    fetch(`/edit_punishment/${id}`, { method: 'POST', body: new FormData(this) })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message) {
+          alert(data.message);
+          location.reload();
+        } else {
+          alert(data.error || 'Edit failed');
+        }
+      });
+  });
+
+  // DELETE
+  document.querySelectorAll('.deleteBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      if (!confirm('Delete punishment?')) return;
+      fetch(`/delete_punishment/${button.dataset.id}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.message) {
+            alert(data.message);
+            location.reload();
+          } else {
+            alert(data.error || 'Delete failed');
+          }
+        });
+    });
+  });
+</script>
+{% endblock %}

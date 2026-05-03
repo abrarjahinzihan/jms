@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Cell Management{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table {
+    background-color: var(--prison-medium);
+    color: var(--prison-text);
+  }
+  .table th {
+    background-color: var(--prison-dark);
+    color: var(--prison-text);
+  }
+  .modal-content {
+    background-color: var(--prison-medium);
+    color: var(--prison-text);
+    border-radius: 8px;
+  }
+  .form-control {
+    background-color: var(--prison-dark);
+    color: #ffffff;
+    border: 1px solid var(--prison-rust);
+  }
+  .btn-close { filter: invert(1); }
+  .modal-header { border-bottom: 1px solid var(--prison-rust); }
+  .modal-footer { border-top: 1px solid var(--prison-rust); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">Cell List</h2>
+
+  {% if session['role'] == 'admin' %}
+  <button class="btn-prison mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Add New Cell</button>
+  {% endif %}
+
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Cell Number</th>
+        <th>Capacity</th>
+        <th>Current Occupants</th>
+        {% if session['role'] == 'admin' %}
+        <th>Actions</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for cell in cells %}
+        <tr>
+          <td>{{ cell.cell_number }}</td>
+          <td>{{ cell.capacity }}</td>
+          <td>{{ cell.current_occupants }}</td>
+          {% if session['role'] == 'admin' %}
+          <td>
+            <button class="btn btn-sm btn-warning editBtn"
+                    data-id="{{ cell.id }}"
+                    data-cell_number="{{ cell.cell_number }}"
+                    data-capacity="{{ cell.capacity }}"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal">Edit</button>
+          </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Cell Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="addCellForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Cell</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input name="cell_number" class="form-control mb-2" placeholder="Cell Number" required>
+        <input name="capacity" type="number" class="form-control" placeholder="Capacity" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-prison" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Cell Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="editCellForm" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Cell</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="id" id="editId">
+        <input name="cell_number" id="editCellNumber" class="form-control mb-2" placeholder="Cell Number" required>
+        <input name="capacity" type="number" id="editCapacity" class="form-control" placeholder="Capacity" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-prison" type="submit">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Add Cell
+  document.getElementById('addCellForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('/add_cell', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || 'Error');
+      location.reload();
+    });
+  });
+
+  // Populate edit modal
+  document.querySelectorAll('.editBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.getElementById('editId').value = button.dataset.id;
+      document.getElementById('editCellNumber').value = button.dataset.cell_number;
+      document.getElementById('editCapacity').value = button.dataset.capacity;
+    });
+  });
+
+  // Edit Cell
+  document.getElementById('editCellForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const id = document.getElementById('editId').value;
+    const formData = new FormData(this);
+    fetch(`/edit_cell/${id}`, { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || 'Error');
+      location.reload();
+    });
+  });
+</script>
+{% endblock %}

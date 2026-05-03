@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Inmate Management{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">Active Inmates</h2>
+
+  <button class="btn-prison mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Add Inmate</button>
+
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Crime</th>
+        <th>Sentence Duration</th>
+        <th>Admission Date</th>
+        <th>Status</th>
+        <th>Sentence</th>
+        <th>Release Date</th>
+        <th>Cell</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inmate in inmates %}
+        {% if inmate.status == 'Active' %}
+          <tr>
+            <td>{{ inmate.name }}</td>
+            <td>{{ inmate.crime }}</td>
+            <td>{{ inmate.sentence_duration }}</td>
+            <td>{{ inmate.admission_date }}</td>
+            <td>{{ inmate.status }}</td>
+            <td>{{ inmate.sentence }}</td>
+            <td>{{ inmate.release_date }}</td>
+            <td>{{ inmate.cell_number or 'N/A' }}</td>
+            <td>
+              <button class="btn btn-sm btn-warning editBtn"
+                      data-id="{{ inmate.id }}"
+                      data-name="{{ inmate.name }}"
+                      data-crime="{{ inmate.crime }}"
+                      data-sentence_duration="{{ inmate.sentence_duration }}"
+                      data-release="{{ inmate.release_date }}"
+                      data-sentence="{{ inmate.sentence }}"
+                      data-bs-toggle="modal"
+                      data-bs-target="#editModal">Edit</button>
+              <button class="btn btn-sm btn-danger deleteBtn"
+                      data-id="{{ inmate.id }}">Delete</button>
+            </td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="addForm" class="modal-content" style="background: var(--prison-medium); color: var(--prison-text);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--prison-rust);">
+        <h5 class="modal-title">Add Inmate</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input name="name" class="form-control mb-2" placeholder="Name" required>
+        <input name="crime" class="form-control mb-2" placeholder="Crime" required>
+        <input name="sentence" class="form-control mb-2" placeholder="Sentence" required>
+        <input name="sentence_duration" class="form-control mb-2" placeholder="Sentence Duration" required>
+        <input name="admission_date" type="date" class="form-control" required>
+        <input name="release_date" type="date" class="form-control mt-2" required>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--prison-rust);">
+        <button class="btn-prison" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form id="editForm" class="modal-content" style="background: var(--prison-medium); color: var(--prison-text);">
+      <input type="hidden" name="id">
+      <div class="modal-header" style="border-bottom: 1px solid var(--prison-rust);">
+        <h5 class="modal-title">Edit Inmate</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input name="name" class="form-control mb-2" placeholder="Name" required>
+        <input name="crime" class="form-control mb-2" placeholder="Crime" required>
+        <input name="sentence" class="form-control mb-2" placeholder="Sentence" required>
+        <input name="sentence_duration" class="form-control mb-2" placeholder="Sentence Duration" required>
+        <input name="release_date" type="date" class="form-control mb-2" placeholder="Release Date" required>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--prison-rust);">
+        <button class="btn-prison" type="submit">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ADD inmate
+  document.getElementById('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('/add_inmate', { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message) {
+          alert(data.message);
+          location.reload();
+        } else {
+          alert(data.error || 'Add failed');
+        }
+      });
+  });
+
+  // Populate Edit Modal
+  document.querySelectorAll('.editBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      const form = document.getElementById('editForm');
+      form.querySelector('[name="id"]').value = button.dataset.id;
+      form.querySelector('[name="name"]').value = button.dataset.name;
+      form.querySelector('[name="crime"]').value = button.dataset.crime;
+      form.querySelector('[name="sentence"]').value = button.dataset.sentence;
+      form.querySelector('[name="sentence_duration"]').value = button.dataset.sentence_duration;
+      form.querySelector('[name="release_date"]').value = button.dataset.release;
+    });
+  });
+
+  // EDIT inmate
+  document.getElementById('editForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const id = this.querySelector('[name="id"]').value;
+    const formData = new FormData(this);
+    fetch(`/edit_inmate/${id}`, { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message) {
+          alert(data.message);
+          location.reload();
+        } else {
+          alert(data.error || 'Edit failed');
+        }
+      });
+  });
+
+  // DELETE inmate
+  document.querySelectorAll('.deleteBtn').forEach(button => {
+    button.addEventListener('click', () => {
+      if (!confirm('Are you sure?')) return;
+      fetch(`/delete_inmate/${button.dataset.id}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.message) {
+            alert(data.message);
+            location.reload();
+          } else {
+            alert(data.error || 'Delete failed');
+          }
+        });
+    });
+  });
+</script>
+{% endblock %}

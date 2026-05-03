@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Inmate to Cell{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h3 class="mb-4" style="color: var(--prison-text);">Assign Inmate to Cell</h3>
+
+  <form id="assignForm" class="prison-card p-4">
+    <div class="mb-3">
+      <label for="inmate_id" class="form-label">Select Inmate</label>
+      <select class="form-select" name="inmate_id" id="inmate_id" required>
+        <option value="">-- Select Inmate --</option>
+        {% for inmate in unassigned_inmates %}
+          <option value="{{ inmate.id }}">{{ inmate.name }} ({{ inmate.id }})</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="cell_id" class="form-label">Select Available Cell</label>
+      <select class="form-select" name="cell_id" id="cell_id" required>
+        <option value="">-- Select Cell --</option>
+        {% for cell in available_cells %}
+          <option value="{{ cell.id }}">Cell {{ cell.cell_number }} ({{ cell.current_occupancy }}/{{ cell.capacity }})</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn-prison">Assign</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('assignForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('/assign_cell', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || data.error);
+      if (data.message) location.reload();
+    });
+  });
+</script>
+{% endblock %}

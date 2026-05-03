@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Inmate Transfers{% endblock %}
+
+{% block extra_css %}
+<style>
+  .transfer-form select, .transfer-form input[type="date"] {
+    background-color: var(--prison-dark);
+    color: #ffffff;
+    border: 1px solid var(--prison-rust);
+    padding: 10px 12px;
+    border-radius: 6px;
+    width: 100%;
+  }
+  .transfer-form label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">Transfer Inmate</h2>
+  <form method="POST" action="{{ url_for('transfers.add_transfer') }}" class="transfer-form">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <label for="inmate_id">Inmate</label>
+        <select name="inmate_id" required>
+          <option value="">-- Select Inmate --</option>
+          {% for inmate in inmates %}
+            <option value="{{ inmate.id }}">{{ inmate.name }} (Cell: {{ inmate.cell_number or 'N/A' }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label for="to_cell">To Cell</label>
+        <select name="to_cell" required>
+          <option value="">-- Select Cell --</option>
+          {% for cell in cells %}
+            <option value="{{ cell.cell_number }}">{{ cell.cell_number }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label for="transfer_date">Transfer Date</label>
+        <input type="date" name="transfer_date" required>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-prison">Submit Transfer</button>
+  </form>
+</div>
+
+<div class="prison-card p-4 mt-4">
+  <h3 style="color: var(--prison-text);">Transfer History</h3>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Inmate</th>
+        <th>From Cell</th>
+        <th>To Cell</th>
+        <th>Transfer Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transfer in transfers %}
+        <tr>
+          <td>{{ transfer.inmate_name }}</td>
+          <td>{{ transfer.from_cell }}</td>
+          <td>{{ transfer.to_cell }}</td>
+          <td>{{ transfer.transfer_date }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

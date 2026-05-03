@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Prison Alerts{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">🔔 Active Prison Alerts</h2>
+
+  {% if alerts %}
+    <div class="row">
+      {% for alert in alerts %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="prison-card p-3" style="border-left: 4px solid #ffc107;">
+            <h5 style="color: white;">
+              {{ alert.name }}
+              <span class="badge bg-warning text-dark">Release</span>
+            </h5>
+            <p>{{ alert.message }}</p>
+            <small class="text-muted">Date: {{ alert.alert_date }}</small><br/>
+            <button class="btn btn-sm btn-outline-success mt-3 resolve-btn" data-id="{{ alert.id }}">
+              Resolve
+            </button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="prison-alert">
+      No active alerts at the moment.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('.resolve-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const id = button.dataset.id;
+      fetch(`/resolve_alert/${id}`, {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.message) {
+          alert(data.message);
+          location.reload();
+        } else {
+          alert(data.error || 'Error resolving alert');
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

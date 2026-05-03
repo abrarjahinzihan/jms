@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Manage Visit Requests</h2>
+
+  {% if visits %}
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>Visitor</th>
+        <th>Inmate</th>
+        <th>Date Requested</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for visit in visits %}
+      <tr>
+        <td>{{ visit.visitor_name }}</td>
+        <td>{{ visit.inmate_name }}</td>
+        <td>{{ visit.date_requested.strftime('%Y-%m-%d') if visit.date_requested else 'N/A' }}</td>
+        <td>{{ visit.status }}</td>
+        <td>
+          {% if visit.status == 'Pending' %}
+            <a href="{{ url_for('visit_request.update_visit_status', id=visit.id, status='Approved') }}" class="btn btn-success btn-sm">Approve</a>
+            <a href="{{ url_for('visit_request.update_visit_status', id=visit.id, status='Rejected') }}" class="btn btn-danger btn-sm">Reject</a>
+          {% else %}
+            <span class="text-muted">No action</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="alert alert-info">No visit requests found.</div>
+  {% endif %}
+</div>
+{% endblock %}

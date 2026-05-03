@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications & Alerts{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">System Notifications</h2>
+
+  {% if session['role'] == 'admin' %}
+    <form action="/add_notification" method="POST" class="mb-4">
+      <div class="input-group">
+        <input name="message" class="form-control" placeholder="Enter notification message..." required>
+        <button class="btn-prison" type="submit">Add Notification</button>
+      </div>
+    </form>
+  {% endif %}
+
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Message</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in notifications %}
+        <tr>
+          <td>{{ n[1] }}</td>
+          <td>{{ n[2] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 class="mt-4" style="color: var(--prison-text);">Unresolved Alerts</h3>
+  <table class="table table-bordered table-striped">
+    <thead>
+      <tr>
+        <th>Inmate ID</th>
+        <th>Type</th>
+        <th>Date</th>
+        <th>Message</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for alert in alerts %}
+        <tr>
+          <td>{{ alert[1] }}</td>
+          <td>{{ alert[2] }}</td>
+          <td>{{ alert[3] }}</td>
+          <td>{{ alert[4] }}</td>
+          <td><span class="badge bg-warning text-dark">{{ alert[5] }}</span></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

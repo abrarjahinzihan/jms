@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<div class="prison-card p-4">
+  <h2 class="mb-4" style="color: var(--prison-text);">Search Records</h2>
+
+  <form method="get" action="/search" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <input type="text" name="q" class="form-control" placeholder="Search..." value="{{ query }}">
+    </div>
+    <div class="col-md-3">
+      <select name="category" class="form-select">
+        <option value="inmates" {% if category == 'inmates' %}selected{% endif %}>Inmates</option>
+        <option value="visitors" {% if category == 'visitors' %}selected{% endif %}>Visitors</option>
+        <option value="cells" {% if category == 'cells' %}selected{% endif %}>Cells</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn-prison w-100">Search</button>
+    </div>
+  </form>
+
+  {% if results %}
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          {% if category == 'inmates' %}
+            <tr>
+              <th>ID</th><th>Name</th><th>Crime</th><th>Sentence</th><th>Status</th>
+            </tr>
+          {% elif category == 'visitors' %}
+            <tr>
+              <th>ID</th><th>Visitor Name</th><th>Relation</th><th>Visit Date</th><th>Inmate ID</th>
+            </tr>
+          {% elif category == 'cells' %}
+            <tr>
+              <th>ID</th><th>Cell Number</th><th>Occupancy</th>
+            </tr>
+          {% endif %}
+        </thead>
+        <tbody>
+          {% for row in results %}
+            <tr>
+              {% for key, value in row.items() %}
+                <td>{{ value }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% elif query %}
+    <p class="text-muted">No results found for "{{ query }}" in {{ category }}.</p>
+  {% endif %}
+</div>
+{% endblock %}
