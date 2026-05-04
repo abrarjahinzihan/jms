@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import mysql
 from datetime import datetime
-from .auth import login_required
+from .auth import login_required, admin_required
 import MySQLdb.cursors
 
 transfers_bp = Blueprint('transfers', __name__)
 
 @transfers_bp.route('/transfers')
-@login_required
+@admin_required
 def view_transfers():
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
@@ -34,7 +34,7 @@ def view_transfers():
     return render_template('transfers.html', inmates=inmates, cells=cells, transfers=transfers)
 
 @transfers_bp.route('/transfers/add', methods=['POST'])
-@login_required
+@admin_required
 def add_transfer():
     inmate_id = request.form.get('inmate_id')
     to_cell = request.form.get('to_cell')

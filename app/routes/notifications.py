@@ -1,12 +1,12 @@
 # app/routes/notifications.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app import mysql
-from .auth import login_required, admin_required
+from .auth import login_required, admin_required, jailer_required
 
 notifications_bp = Blueprint('notifications', __name__)
 
 @notifications_bp.route('/notifications')
-@login_required
+@jailer_required
 def view_notifications():
     cur = mysql.connection.cursor()
     

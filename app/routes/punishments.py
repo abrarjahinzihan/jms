@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from app import mysql
 from datetime import datetime
-from .auth import login_required
+from .auth import login_required, admin_required
 
 punishments_bp = Blueprint('punishments', __name__)
 
 @punishments_bp.route('/punishments')
-@login_required
+@admin_required
 def view_punishments():
     cur = mysql.connection.cursor()
     cur.execute("""
@@ -24,7 +24,7 @@ def view_punishments():
     return render_template('punishments.html', punishments=punishments, inmates=inmates)
 
 @punishments_bp.route('/add_punishment', methods=['POST'])
-@login_required
+@admin_required
 def add_punishment():
     inmate_id = request.form['inmate_id']
     details = request.form['punishment_detail']
@@ -41,7 +41,7 @@ def add_punishment():
     return jsonify({"message": "Punishment added successfully"}), 201
 
 @punishments_bp.route('/edit_punishment/<int:id>', methods=['POST'])
-@login_required
+@admin_required
 def edit_punishment(id):
     inmate_id = request.form['inmate_id']
     details = request.form['punishment_detail']
@@ -59,7 +59,7 @@ def edit_punishment(id):
     return jsonify({"message": "Punishment updated successfully"}), 200
 
 @punishments_bp.route('/delete_punishment/<int:id>', methods=['POST'])
-@login_required
+@admin_required
 def delete_punishment(id):
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM punishments WHERE id=%s", (id,))

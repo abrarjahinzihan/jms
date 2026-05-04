@@ -26,6 +26,15 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def jailer_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session or session.get('role') not in ['admin', 'jailer']:
+            flash('Access denied!', 'danger')
+            return redirect(url_for('dashboard.dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @auth_bp.route('/', methods=['GET', 'POST'])
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():

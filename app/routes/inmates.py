@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, request, redirect, session, flash, jsonify
 from app import mysql
-from .auth import login_required
+from .auth import login_required, admin_required
 import MySQLdb.cursors
 from datetime import date
 
@@ -10,7 +10,7 @@ inmates_bp = Blueprint('inmates', __name__)
 
 # View all inmates
 @inmates_bp.route('/inmates')
-@login_required
+@admin_required
 def view_inmates():
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # Use DictCursor here!
     cur.execute("""
@@ -46,11 +46,8 @@ def update_released_inmates():
     
 # Add new inmate
 @inmates_bp.route('/add_inmate', methods=['POST'])
-@login_required
+@admin_required
 def add_inmate():
-    if session['role'] != 'admin':
-        return jsonify({"error": "Unauthorized access"}), 403
-
     name = request.form['name']
     crime = request.form['crime']
     sentence = request.form['sentence']  # <- Fix: get 'sentence'
@@ -71,11 +68,8 @@ def add_inmate():
 
 # Edit inmate
 @inmates_bp.route('/edit_inmate/<int:id>', methods=['POST'])
-@login_required
+@admin_required
 def edit_inmate(id):
-    if session['role'] != 'admin':
-        return jsonify({"error": "Unauthorized access"}), 403
-
     name = request.form['name']
     crime = request.form['crime']
     sentence = request.form['sentence']  # <- Fix: get 'sentence'
@@ -96,11 +90,8 @@ def edit_inmate(id):
 
 # Delete inmate
 @inmates_bp.route('/delete_inmate/<int:id>', methods=['POST'])
-@login_required
+@admin_required
 def delete_inmate(id):
-    if session['role'] != 'admin':
-        return jsonify({"error": "Unauthorized access"}), 403
-
     cur = mysql.connection.cursor()
     
     # Check if inmate is in a cell and decrement occupancy

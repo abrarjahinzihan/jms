@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, session, flash
 from app import mysql
-from .auth import login_required
+from .auth import login_required, jailer_required
 
 visitors_bp = Blueprint('visitors', __name__)
 
 @visitors_bp.route('/visitors')
-@login_required
+@jailer_required
 def view_visitors():
     cur = mysql.connection.cursor()
     
@@ -26,7 +26,7 @@ def view_visitors():
     return render_template('visitors.html', visitors=visitors, inmates=inmates)
 
 @visitors_bp.route('/add_visitor', methods=['POST'])
-@login_required
+@jailer_required
 def add_visitor():
     inmate_id = request.form['inmate_id']
     visitor_name = request.form['visitor_name']

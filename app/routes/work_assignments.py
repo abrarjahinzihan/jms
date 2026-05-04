@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app import mysql
 from datetime import datetime
-from .auth import login_required
+from .auth import login_required, admin_required
 
 work_assignments_bp = Blueprint('work_assignments', __name__)
 
 @work_assignments_bp.route('/work_assignments')
-@login_required
+@admin_required
 def view_work_assignments():
     from MySQLdb.cursors import DictCursor
     cur = mysql.connection.cursor(DictCursor)  # ← use DictCursor
@@ -29,7 +29,7 @@ def view_work_assignments():
 
 
 @work_assignments_bp.route('/add_work_assignment', methods=['POST'])
-@login_required
+@admin_required
 def add_work_assignment():
     inmate_id = request.form['inmate_id']
     work_detail = request.form['work_detail']
@@ -51,7 +51,7 @@ def add_work_assignment():
 
 
 @work_assignments_bp.route('/update_work_status/<int:id>', methods=['POST'])
-@login_required
+@admin_required
 def update_work_status(id):
     new_status = request.form['status']
     completion_date = request.form.get('completion_date')

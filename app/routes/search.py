@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request
 from app import mysql
-from .auth import login_required
+from .auth import login_required, jailer_required
 import MySQLdb.cursors  
 
 search_bp = Blueprint('search', __name__)
 
 @search_bp.route('/search')
-@login_required
+@jailer_required
 def search():
     query = request.args.get('q', '')
     category = request.args.get('category', 'inmates')

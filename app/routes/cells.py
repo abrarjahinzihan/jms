@@ -8,7 +8,7 @@ import MySQLdb.cursors
 cells_bp = Blueprint('cells', __name__)
 
 @cells_bp.route('/cells')
-@login_required
+@admin_required
 def view_cells():
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cur.execute("""
